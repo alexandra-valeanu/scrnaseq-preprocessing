@@ -11,7 +11,7 @@ WorkflowPreprocessing.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+def checkPathParamList = [ params.input, params.multiqc_config, params.index, params.t2g, params.t1c, params.t2c]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
@@ -48,6 +48,8 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 include { FASTQC                      } from '../modules/nf-core/modules/fastqc/main'
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
+include { KALLISTOBUSTOOLS_COUNT      } from '../modules/nf-core/modules/kallistobustools/count/main'
+include { H5AD_OUTPUT                 } from '../modules/local/h5ad_output'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
 /*
@@ -78,6 +80,21 @@ workflow PREPROCESSING {
         INPUT_CHECK.out.reads
     )
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    KALLISTOBUSTOOLS_COUNT (
+        INPUT_CHECK.out.reads,
+        params.index,
+        params.t2g,
+        params.t1c,
+        params.t2c,
+        params.workflow_mode,
+        params.technology
+    )
+    ch_versions = ch_versions.mix(KALLISTOBUSTOOLS_COUNT.out.versions)
+
+    H5AD_OUTPUT (
+        KALLISTOBUSTOOLS_COUNT.out.count
+    )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
