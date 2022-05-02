@@ -27,8 +27,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Quick Start
 
-1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.10.3`)
-
+1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) 
 2. Download the pipeline and test it on a minimal dataset with a single command:
 
    ```console
