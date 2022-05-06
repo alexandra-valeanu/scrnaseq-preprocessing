@@ -12,7 +12,7 @@ workflow INPUT_CHECK {
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
         .splitCsv ( header:true, sep:',' )
-        .map { create_fastq_channel(it) }
+        .map { params.input_type=='fastq' ? create_fastq_channel(it) : create_bam_channel(it)}
         .set { reads }
 
     emit:
@@ -25,20 +25,37 @@ def create_fastq_channel(LinkedHashMap row) {
     // create meta map
     def meta = [:]
     meta.id         = row.sample
-    meta.single_end = row.single_end.toBoolean()
 
     // add path(s) of the fastq file(s) to the meta map
     def fastq_meta = []
-    if (!file(row.fastq_1).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq_1}"
+    if (!file(row.fastq_1).exists() && !file(row.fastq_2).exists()) {
+        exit 1, "ERROR: Please check input samplesheet -> Read 1 and Read 2 FastQ files do not exist!\n${row.fastq_1}\n${row.fastq_2}"
     }
-    if (meta.single_end) {
-        fastq_meta = [ meta, [ file(row.fastq_1) ] ]
-    } else {
-        if (!file(row.fastq_2).exists()) {
-            exit 1, "ERROR: Please check input samplesheet -> Read 2 FastQ file does not exist!\n${row.fastq_2}"
-        }
+    if (row.fastq_3.isEmpty()) {
         fastq_meta = [ meta, [ file(row.fastq_1), file(row.fastq_2) ] ]
+    } else {
+        if (!file(row.fastq_3).exists()) {
+            exit 1, "ERROR: Please check input samplesheet -> Read 3 FastQ file does not exist!\n${row.fastq_3}"
+        }
+        fastq_meta = [ meta, [ file(row.fastq_1), file(row.fastq_2), file(row.fastq_3) ] ]
     }
+
     return fastq_meta
+}
+
+// Function to get list of [ meta, [ bam ] ]
+def create_bam_channel(LinkedHashMap row) {
+    // create meta map
+    def meta = [:]
+    meta.id         = row.sample
+
+    // add path(s) of the fastq file(s) to the meta map
+    def fastq_meta = []
+    if (!file(row.bam).exists()) {
+        exit 1, "ERROR: Please check input samplesheet -> BAM file does not exist!\n${row.bam}"
+    }
+
+    bam_meta = [ meta, [ file(row.bam) ] ]
+
+    return bam_meta
 }

@@ -1,69 +1,90 @@
-# ![nf-core-preprocessing](docs/images/nf-core/preprocessing_logo_dark.png#gh-dark-mode-only)
+# nf-core-preprocessing
 
 [![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/preprocessing/results) [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX) [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/) [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23preprocessing-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/preprocessing)
 
-## Introduction
+## Workflow
+
+![workflow](docs/images/pipeline.png)
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
-
-**nf-core/preprocessing** is a bioinformatics best-practice analysis pipeline for test.
-
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
-
-<!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
 
 
 ## Pipeline summary
 
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
-3. kallisto|bustools counts ([`kb-tools`](https://www.kallistobus.tools/kb_usage/kb_count/))
+1. Convert files from BAM to FASTQ (optional) ([`bamtofastq`](https://github.com/10XGenomics/bamtofastq))
+2. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
+3. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+4. kallisto|bustools counts ([`kb-tools`](https://www.kallistobus.tools/kb_usage/kb_count/))
     - Align reads to a reference transcriptome
     - Correct barcode errors
     - Produce a count matrix 
-4. Rename H5AD files with given sample name
+5. Rename H5AD files with given sample name
 
 ## Quick Start
 
 1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) 
-2. Download the pipeline and test it on a minimal dataset with a single command:
-
-   ```console
-   nextflow run nf-core-preprocessing -profile test,singularity --outdir <OUTDIR>
-   ```
-
-   Note that some form of configuration will be needed so that Nextflow knows how to fetch the required software. This is usually done in the form of a config profile (`YOURPROFILE` in the example command above). You can chain multiple config profiles in a comma-separated string.
+2. Download the pipeline and test it on a minimal dataset with -profile test,singularity
+   The test profile is fetching the samplesheet_test.csv (https://git.rwth-aachen.de/vleanu.alexandra/test-files/-/raw/main/samplesheet_test.csv) and you can skip some of the mandatory parameters since they are already passed in the configuration file for test. 
 
    > - The pipeline comes with config profile called `singularity` which instruct the pipeline to use the named tool for software management. For example, `-profile test,singularity`.
 
-3. Build your own samplesheet.csv like in example of test file:
 
-   https://git.rwth-aachen.de/vleanu.alexandra/test-files/-/raw/main/samplesheet_test.csv
+   ```console
+   nextflow run vleanu.alexandra/nf-core-scrnaseq-pipeline -hub rwth -profile test,singularity \
+   --index '/path_to_your/index.idx' \
+   --t2g '/path_to_your/t2g.txt' \
+   --t1c '/path_to_your/cdna_t2c.txt' \
+   --t2c '/path_to_your/intron_t2c.txt' \
+   --outdir '/path_to_your/outdir' \
+   -with-report '/path/to/store/pipeline_report.html'
+   ```
+
+
+3. Build your own samplesheet.csv:
+
+   ![samplesheet](docs/images/samplesheet.png)
 
 4. Start running your own analysis!
 
-   <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-
    ```console
-   nextflow run nf-core-preprocessing -profile singularity \
-   --input 'path/to/samplesheet.csv' \
-   --index 'path/to/index.idx' \
-   --t2g '/path/to/t2g.txt' \
-   --t1c '/path/to/cdna_t2c.txt' \
-   --t2c 'path/to/intron_t2c.txt' \
+   nextflow run vleanu.alexandra/nf-core-scrnaseq-pipeline -hub rwth -profile singularity \
+   --input_type 'fastq' \
+   --input '/path_to_your/samplesheet.csv' \
+   --index '/path_to_your/index.idx' \
+   --t2g '/path_to_your/t2g.txt' \
+   --t1c '/path_to_your/cdna_t2c.txt' \
+   --t2c '/path_to_your/intron_t2c.txt' \
    --workflow_mode 'lamanno' \
-   --technology '10XV3' \
-   --outdir '/path/to/dir/to/store/results/' \
-   -with-report '/path/to/store/nfcore_report.html' 
-   ```
+   --technology '10XV2' \
+   --outdir '/path_to_your/outdir' \
+   -with-report '/path/to/store/nfcore_report.html'
 
+
+   Options
+   Mandatory parameters:
+   -profile                Can run with singularity container if specified
+   --input_type            Either a 'bam' or 'fastq' type of input
+   --input                 The path to you samplesheet.csv which contains the BAM or FASTQ files.
+   --index                 Path to index/indices for kallisto|bustools  
+   --t2g                   Path to transcript-to-gene mapping for kallisto|bustools 
+   --workflow_mode         Workflow to be used {standard,lamanno,nucleus,kite,kite:10xFB} eg: 'lamanno' 
+   --technology            Technology to be used. (`kb --list` to view the supported technologies) eg: '10XV2' 
+   --outdir                Path to your output directory 
+
+   Required arguments for `lamanno` and `nucleus` workflows:
+   --t1c                   Path to cDNA transcripts-to-capture for kallisto|bustools 
+   --t2c                   Path to intron transcripts-to-captured for kallisto|bustools
+
+   Optional parameters:
+   -with-report            Nextflow report to be created for the whole pipeline
+   ```
 ## Credits
 
-nf-core-preprocessing was originally written by Alexandra Valeanu.
+This pipeline was originally written by Alexandra Valeanu.
 
-We thank the following people for their extensive assistance in the development of this pipeline: Zhambyl Otarbayev
+We thank the following people for their extensive assistance in the development of the pipeline: Zhambyl Otarbayev
 
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 

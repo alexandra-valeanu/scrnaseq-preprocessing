@@ -15,14 +15,29 @@ process SAMPLESHEET_CHECK {
     path "versions.yml", emit: versions
 
     script: // This script is bundled with the pipeline, in nf-core/preprocessing/bin/
-    """
-    check_samplesheet.py \\
-        $samplesheet \\
-        samplesheet.valid.csv
+    if( params.input_type == 'bam' )
+        """
+        check_samplesheet_bam.py \\
+            $samplesheet \\
+            samplesheet.valid.csv
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-    END_VERSIONS
-    """
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+        END_VERSIONS
+        """
+
+    else if( params.input_type == 'fastq' )
+        """
+        check_samplesheet.py \\
+            $samplesheet \\
+            samplesheet.valid.csv
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+        END_VERSIONS
+        """
+    else
+        error "Invalid input type: ${params.input_type}"
 }

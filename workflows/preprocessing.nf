@@ -46,6 +46,7 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { BAM_TO_FASTQ                } from '../modules/local/bam_to_fastq'
 include { FASTQC                      } from '../modules/nf-core/modules/fastqc/main'
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
 include { KALLISTOBUSTOOLS_COUNT      } from '../modules/nf-core/modules/kallistobustools/count/main'
@@ -73,16 +74,30 @@ workflow PREPROCESSING {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
+    if (params.input_type == 'bam') {
+        BAM_TO_FASTQ (
+        INPUT_CHECK.out.reads
+    )
+    }
+
     //
     // MODULE: Run FastQC
     //
+    ch_abc = Channel.empty()
+    if (params.input_type == 'bam') {
+        ch_abc = BAM_TO_FASTQ.out.reads
+    } else if (params.input_type == 'fastq') {
+        ch_abc = INPUT_CHECK.out.reads
+    }
+
+
     FASTQC (
-        INPUT_CHECK.out.reads
+        ch_abc
     )
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
     KALLISTOBUSTOOLS_COUNT (
-        INPUT_CHECK.out.reads,
+        ch_abc,
         params.index,
         params.t2g,
         params.t1c,

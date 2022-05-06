@@ -12,9 +12,18 @@
             "description": "Define where the pipeline should find input data and save output data.",
             "required": [
                 "input",
-                "outdir"
+                "outdir",
+                "input_type"
             ],
             "properties": {
+                "input_type": {
+                    "type": "string",
+                    "default": "fastq",
+                    "enum": [
+                        "fastq",
+                        "bam"
+                    ]
+                },
                 "input": {
                     "type": "string",
                     "format": "file-path",
@@ -44,7 +53,8 @@
                     "fa_icon": "fas fa-file-signature"
                 }
             }
-        },"reference_input_for_kb_count": {
+        },
+        "reference_input_for_kb_count": {
             "title": "Reference input for kb count",
             "type": "object",
             "description": "",
@@ -52,36 +62,34 @@
             "properties": {
                 "index": {
                     "type": "string",
-                    "default": null
+                    "default": "None"
                 },
                 "t2g": {
                     "type": "string",
-                    "default": null
+                    "default": "None"
                 },
                 "t1c": {
                     "type": "string",
-                    "default": null
+                    "default": "None"
                 },
                 "t2c": {
                     "type": "string",
-                    "default": null
+                    "default": "None"
                 },
                 "workflow_mode": {
                     "type": "string",
-                    "default": null
+                    "default": "None"
                 },
                 "technology": {
                     "type": "string",
-                    "default": null
+                    "default": "None"
                 }
             },
             "required": [
+                "index",
                 "t2g",
-                "t1c",
-                "t2c",
                 "workflow_mode",
-                "technology",
-                "index"
+                "technology"
             ]
         },
         "reference_genome_options": {
@@ -279,10 +287,10 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/reference_input_for_kb_count"
+            "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/definitions/reference_input_for_kb_count"
         },
         {
             "$ref": "#/definitions/reference_genome_options"
