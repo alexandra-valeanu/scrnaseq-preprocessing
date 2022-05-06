@@ -4,7 +4,7 @@
 
 ## Workflow
 
-![workflow](docs/images/pipeline.png)
+![workflow](docs/images/workflow.png)
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
 
