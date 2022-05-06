@@ -37,8 +37,7 @@
    --t2g '/path_to_your/t2g.txt' \
    --t1c '/path_to_your/cdna_t2c.txt' \
    --t2c '/path_to_your/intron_t2c.txt' \
-   --outdir '/path_to_your/outdir' \
-   -with-report '/path/to/store/pipeline_report.html'
+   --outdir '/path_to_your/output_directory' \
    ```
 
 
@@ -58,8 +57,7 @@
    --t2c '/path_to_your/intron_t2c.txt' \
    --workflow_mode 'lamanno' \
    --technology '10XV2' \
-   --outdir '/path_to_your/outdir' \
-   -with-report '/path/to/store/nfcore_report.html'
+   --outdir '/path_to_your/output_directory'
 
 
    Options
@@ -76,9 +74,6 @@
    Required arguments for `lamanno` and `nucleus` workflows:
    --t1c                   Path to cDNA transcripts-to-capture for kallisto|bustools 
    --t2c                   Path to intron transcripts-to-captured for kallisto|bustools
-
-   Optional parameters:
-   -with-report            Nextflow report to be created for the whole pipeline
    ```
 ## Credits
 
